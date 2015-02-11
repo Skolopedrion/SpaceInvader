@@ -3,13 +3,13 @@
 
 import pygame as pg
 from pygame.locals import *
+from collections import defaultdict
 
 pg.init()
 pg.display.init()
 
 from constants import *
 from ship import Ship
-from key import Key
 
 
 class Game:
@@ -24,55 +24,54 @@ class Game:
         self.ship = ship
         self.waves = list(waves)
 
-        self.active = {}
+        self.active = defaultdict(lambda: False)
 
-    def update_active(self):
-        for key in self.active:
-            self.active[key] += 1
-
-    def do(self, key):
-        for listened in Key.listened:
-            if listened.key == key:
-                listened(self.ship, self.active[key])
+    def process_key(self, dt):
+        if self.active[K_LEFT]:
+            self.ship.shift_left(dt)
+        if self.active[K_RIGHT]:
+            self.ship.shift_right(dt)
+        if self.active[K_SPACE]:
+            self.ship.fire()
 
     def mainloop(self):
+        clock = pg.time.Clock()
         running = True
 
         while running and self.waves:
+            pg.time.wait(0)
+            dt = clock.tick()
+
             for i, laser in enumerate(self.ship.lasers):
-                laser.move_up()
+                laser.move_up(dt)
                 if laser.y <= 0:
                     del self.ship.lasers[i]
 
-            for key in self.active:
-                    self.do(key)
+            self.process_key(dt)
 
             self.draw()
             pg.display.flip()
 
             for event in pg.event.get():
                 if event.type == KEYDOWN:
-                    self.active[event.key] = 0
+                    self.active[event.key] = True
 
                     if event.key == K_ESCAPE:
                         running = False
                         break
 
                 elif event.type == KEYUP:
-                    del self.active[event.key]
+                    self.active[event.key] = False
 
                 elif event.type == QUIT:
                     running = False
                     break
 
-            self.update_active()
-            self.waves[0].update(self)
+            self.waves[0].update(self, dt)
+            self.ship.update(dt)
 
             if not self.waves[0]:
                 self.waves.pop(0)
-
-        # self.over()
-        # pg.time.wait(10000)
 
         pg.quit()
 

@@ -22,9 +22,9 @@ class Wave(list):
                 wave.append(Invader((x, y - h * (ENTITY_HEIGHT + margin)), sprite))
         return wave
 
-    def update(self, game):
+    def update(self, game, dt):
         for invader_index, invader in enumerate(self):
-            invader.y += .1
+            invader.y += 30 * dt / 1000
 
             for laser_index, laser in enumerate(game.ship.lasers):
                 if int(laser.x) in range(*invader.mask[0]) and int(laser.y) in range(*invader.mask[1]):
