@@ -11,7 +11,7 @@ class Ship:
     sprite = load_entity_sprite('media/ship.png')
 
     def __init__(self, pos, speed=50, fire_rate=2):
-        self.pos = pos
+        self.rect = pg.Rect(pos, self.sprite.get_rect().size)
         self.lasers = []
         self.last_canon_that_fired = random.choice((-1, 1))
         self.speed = speed
@@ -20,14 +20,14 @@ class Ship:
 
     @property
     def pos(self):
-        return self.x, self.y
+        return self.rect.topleft
 
     @pos.setter
     def pos(self, newpos):
-        self.x, self.y = newpos
+        self.rect.topleft = newpos
 
     def shift(self, dx):
-        x = self.x + dx
+        x = self.rect.x + dx
         if 0 <= x <= SCREEN_WIDTH - ENTITY_WIDTH:
             self.x = x
 
@@ -61,17 +61,20 @@ class Ship:
 
 
 class Laser:
+    surface = pg.Surface((2, 10))
+    pg.draw.ellipse(surface, 0xFFFFFF, (0, 0, 2, 10))
+
     def __init__(self, x, y, velocity=200):
-        self.x, self.y = x, y
+        self.rect = pg.Rect((x, y), self.surface.get_rect().size)
         self.velocity = velocity
 
     @property
     def pos(self):
-        return self.x, self.y
+        return self.rect.topleft
 
     @pos.setter
     def pos(self, newpos):
-        self.x, self.y = newpos
+        self.rect.topleft = newpos
 
     def move_up(self, dt):
-        self.y -= self.velocity * dt / 1000
+        self.rect.y -= self.velocity * dt / 1000

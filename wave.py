@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import pygame as pg
 import random
 
 from constants import *
@@ -23,14 +24,16 @@ class Wave(list):
         return wave
 
     def update(self, game, dt):
-        for invader_index, invader in enumerate(self):
-            invader.y += 30 * dt / 1000
+        lasers_rect = list(map(lambda laser: laser.rect, game.ship.lasers))
 
-            for laser_index, laser in enumerate(game.ship.lasers):
-                if int(laser.x) in range(*invader.mask[0]) and int(laser.y) in range(*invader.mask[1]):
-                    del game.ship.lasers[laser_index]
-                    del self[invader_index]
-                    break
+        for invader_index, invader in enumerate(self):
+            invader.rect.y += 30 * dt / 1000
+
+            laser_index = invader.rect.collidelist(lasers_rect)
+            if laser_index != -1:
+                print(laser_index)
+                del game.ship.lasers[laser_index]
+                del self[invader_index]
 
     def persists(self):
         return bool(self)

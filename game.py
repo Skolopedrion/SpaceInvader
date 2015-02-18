@@ -39,7 +39,6 @@ class Game:
         running = True
 
         while running and self.waves:
-            pg.time.wait(0)
             dt = clock.tick()
 
             for i, laser in enumerate(self.ship.lasers):
@@ -79,7 +78,7 @@ class Game:
         Game.screen.blit(Game.background, (0, 0))
 
         for laser in self.ship.lasers:
-            pg.draw.ellipse(Game.screen, 0xFFFFFF, laser.pos + (2, 10))
+            Game.screen.blit(laser.surface, laser.pos)
 
         for invader in self.waves[0]:
             Game.screen.blit(invader.sprite, invader.pos)
