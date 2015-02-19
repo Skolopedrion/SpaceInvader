@@ -5,25 +5,31 @@ import pygame as pg
 from pygame.locals import *
 from collections import defaultdict
 
-pg.init()
-pg.display.init()
-
 from constants import *
+
+pg.init()
+screen = pg.display.set_mode(SCREEN_SIZE)
+
 from ship import Ship
+from wave import Wave
+from fpscounter import FPSCounter
 
 
 class Game:
-    screen = pg.display.set_mode(SCREEN_SIZE)
     background = pg.transform.scale(
         pg.image.load('media/space.png'), SCREEN_SIZE
     )
 
     game_over = pg.transform.scale(pg.image.load('media/game_over.png').convert_alpha(), (SCREEN_WIDTH // 2, SCREEN_WIDTH // 2))
 
-    def __init__(self, ship, waves=()):
-        self.ship = ship
-        self.waves = list(waves)
-
+    def __init__(self):
+        self.ship = Ship(
+            pos=(
+                SCREEN_WIDTH // 2 - ENTITY_WIDTH // 2,
+                SCREEN_HEIGHT - ENTITY_HEIGHT - 16
+            )
+        )
+        self.waves = [Wave.generate(9, y) for y in range(3, 13)]
         self.active = defaultdict(lambda: False)
 
     def process_key(self, dt):
@@ -36,20 +42,11 @@ class Game:
 
     def mainloop(self):
         clock = pg.time.Clock()
+        fpscounter = FPSCounter(clock)
         running = True
 
         while running and self.waves:
             dt = clock.tick()
-
-            for i, laser in enumerate(self.ship.lasers):
-                laser.move_up(dt)
-                if laser.y <= 0:
-                    del self.ship.lasers[i]
-
-            self.process_key(dt)
-
-            self.draw()
-            pg.display.flip()
 
             for event in pg.event.get():
                 if event.type == KEYDOWN:
@@ -66,27 +63,41 @@ class Game:
                     running = False
                     break
 
+            self.process_key(dt)
+
             self.waves[0].update(self, dt)
             self.ship.update(dt)
 
             if not self.waves[0]:
                 self.waves.pop(0)
 
+            for i, laser in enumerate(self.ship.lasers):
+                laser.move_up(dt)
+                if laser.rect.y <= 0:
+                    del self.ship.lasers[i]
+
+            fpscounter.update(dt)
+
+            self.draw()
+            fpscounter.draw(screen)
+
+            pg.display.flip()
+
         pg.quit()
 
     def draw(self):
-        Game.screen.blit(Game.background, (0, 0))
+        screen.blit(Game.background, (0, 0))
 
         for laser in self.ship.lasers:
-            Game.screen.blit(laser.surface, laser.pos)
+            screen.blit(laser.surface, laser.pos)
 
         for invader in self.waves[0]:
-            Game.screen.blit(invader.sprite, invader.pos)
+            screen.blit(invader.sprite, invader.pos)
 
-        Game.screen.blit(Ship.sprite, self.ship.pos)
+        screen.blit(Ship.sprite, self.ship.pos)
 
     def over(self):
-        Game.screen.blit(
+        screen.blit(
             Game.game_over,
             (
                 SCREEN_WIDTH // 2 - Game.game_over.get_width() // 2,

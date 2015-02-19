@@ -27,11 +27,10 @@ class Wave(list):
         lasers_rect = list(map(lambda laser: laser.rect, game.ship.lasers))
 
         for invader_index, invader in enumerate(self):
-            invader.rect.y += 30 * dt / 1000
+            invader.y += 30 * dt / 1000
 
             laser_index = invader.rect.collidelist(lasers_rect)
             if laser_index != -1:
-                print(laser_index)
                 del game.ship.lasers[laser_index]
                 del self[invader_index]
 

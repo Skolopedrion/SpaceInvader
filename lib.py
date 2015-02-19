@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pygame as pg
-pg.display.set_mode((0, 0))
 
 from constants import *
 

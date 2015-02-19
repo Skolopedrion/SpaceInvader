@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import random
-from pygame.locals import *
 
 from lib import *
 
@@ -10,8 +9,9 @@ from lib import *
 class Ship:
     sprite = load_entity_sprite('media/ship.png')
 
-    def __init__(self, pos, speed=50, fire_rate=2):
+    def __init__(self, pos, speed=100, fire_rate=4):
         self.rect = pg.Rect(pos, self.sprite.get_rect().size)
+        self.pos = pos
         self.lasers = []
         self.last_canon_that_fired = random.choice((-1, 1))
         self.speed = speed
@@ -20,16 +20,35 @@ class Ship:
 
     @property
     def pos(self):
-        return self.rect.topleft
+        return self._x, self._y
 
     @pos.setter
     def pos(self, newpos):
+        self._x, self._y = newpos
         self.rect.topleft = newpos
 
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+        self.rect.x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+        self.rect.y = value
+
     def shift(self, dx):
-        x = self.rect.x + dx
-        if 0 <= x <= SCREEN_WIDTH - ENTITY_WIDTH:
-            self.x = x
+        self.x += dx
+        self.x = max(0, self.x)
+        self.x = min(self.x, SCREEN_WIDTH - ENTITY_WIDTH)
 
     def shift_left(self, dt):
         self.shift(-self.speed * dt / 1000)
@@ -45,8 +64,8 @@ class Ship:
 
         self.lasers.append(
             Laser(
-                self.x + dx,
-                self.y, random.randint(125, 225)
+                self.rect.x + dx,
+                self.rect.y, random.randint(125, 225)
             )
         )
 
@@ -66,15 +85,35 @@ class Laser:
 
     def __init__(self, x, y, velocity=200):
         self.rect = pg.Rect((x, y), self.surface.get_rect().size)
+        self.pos = x, y
         self.velocity = velocity
 
     @property
     def pos(self):
-        return self.rect.topleft
+        return self._x, self._y
 
     @pos.setter
     def pos(self, newpos):
+        self._x, self._y = newpos
         self.rect.topleft = newpos
 
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+        self.rect.x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
+        self.rect.y = value
+
     def move_up(self, dt):
-        self.rect.y -= self.velocity * dt / 1000
+        self.y -= self.velocity * dt / 1000
